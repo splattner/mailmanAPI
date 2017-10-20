@@ -1,7 +1,7 @@
 {
 
   "name" : "splattner/mailmanapi",
-  "version" : "1.0.1",
+  "version" : "1.0.2",
   "type" : "library",
   "license": "MIT",
   "description": "A simple API to work with Mailman 2.x Mailing Lists",
