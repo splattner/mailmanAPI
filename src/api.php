@@ -2,7 +2,7 @@
 
 namespace splattner\mailmanapi;
 
-use EasyRequest\client;
+use EasyRequest\Client;
 use EasyRequest\Cookie\CookieJar;
 
 
