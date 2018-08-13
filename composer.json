@@ -1,12 +1,12 @@
 {
 
   "name" : "splattner/mailmanapi",
-  "version" : "1.0.2",
+  "version" : "1.1.0",
   "type" : "library",
   "license": "MIT",
   "description": "A simple API to work with Mailman 2.x Mailing Lists",
   "homepage" : "https://github.com/splattner/mailmanAPI",
-  
+
   "authors": [
     {
       "name": "Sebastian Plattner",
@@ -16,9 +16,9 @@
   ],
 
   "require": {
-    "ptcong/easyrequest": "^1.0",
+    "guzzlehttp/guzzle": "~6.0",
     "paquettg/php-html-parser": "^1.7"
-  },  
+  },
   "autoload": {
     "files": [
       "src/api.php"

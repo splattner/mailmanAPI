@@ -2,16 +2,14 @@
 
 namespace splattner\mailmanapi;
 
-use EasyRequest\Client;
-use EasyRequest\Cookie\CookieJar;
-
+use GuzzleHttp\Client;
 
 class MailmanAPI {
 
 	private $mailmanURL;
 	private $password;
-	private $cookieJar;
-	
+	private $client;
+
 	/**
 	 * @param $mailmanurl
 	 *  Mailman Base URL
@@ -23,14 +21,14 @@ class MailmanAPI {
 		$this->mailmanURL = $mailmalurl;
 		$this->password = $password;
 
-		$request = Client::request($this->mailmanURL, 'POST');
-		$request->withFormParam("adminpw",$this->password);
-		$request->send();
+		$this->client = new Client(['base_uri' => $this->mailmanURL, 'cookies' => true]);
 
-		$response = $request->getResponse();		
+		$response = $this->client->request('POST', '', [
+    'form_params' => [
+        'adminpw' => $this->password
+    	]
+		]);
 
-		$this->cookieJar = new CookieJar();
-		$this->cookieJar->fromResponse($response);
 	}
 
 
@@ -39,9 +37,7 @@ class MailmanAPI {
 	 */
 	public function getMemberlist() {
 
-		$request = Client::request($this->mailmanURL . "/members", 'GET', array('cookie_jar' => $this->cookieJar));
-		$request->send();
-		$response = $request->getResponse();
+		$response = $this->client->request('GET', $this->mailmanURL . '/members');
 
 		$dom = new \DOMDocument;
 		$dom->loadHTML($response->getBody());
@@ -62,9 +58,7 @@ class MailmanAPI {
 		$memberList = array();
 
 		foreach($urlsForLetters as $url) {
-			$request = Client::request($url, 'GET', array('cookie_jar' => $this->cookieJar));
-			$request->send();
-			$response = $request->getResponse();
+			$response = $this->client->request('GET', $url);
 
 			$dom = new \DOMDocument;
 			$dom->loadHTML($response->getBody());
@@ -91,18 +85,19 @@ class MailmanAPI {
 	 */
 	public function addMembers($members) {
 
-		$token = $this->getCSRFToken("add");	
-		$request = Client::request($this->mailmanURL . "/members/add", 'POST', array('cookie_jar' => $this->cookieJar));
+		$token = $this->getCSRFToken("add");
 
-		$request->withFormParam("csrf_token", $token)
-		->withFormParam("subscribe_or_invite","0")
-		->withFormParam("send_welcome_msg_to_this_batch","0")
-		->withFormParam("send_notifications_to_list_owner","0")
-		->withFormParam("subscribees",join(chr(10), $members))
-		->withFormParam("setmemberopts_btn","Änderungen speichern");
-		$request->send();
+		$response = $this->client->request('POST', $this->mailmanURL . '/members/add', [
+			'form_params' => [
+				'csrf_token' => $token,
+				'subscribe_or_invite' => '0',
+				'send_welcome_msg_to_this_batch' => '0',
+				'send_notifications_to_list_owner' => '0',
+				'subscribees' => join(chr(10), $members),
+				'setmemberopts_btn' => 'Änderungen speichern'
+			]
+		]);
 
-		$response = $request->getResponse();
 
 		return $this->parseResultList($response->getBody());
 	}
@@ -116,21 +111,21 @@ class MailmanAPI {
 	 */
 	public function removeMembers($members) {
 
-		$token = $this->getCSRFToken("remove");	
-		$request = Client::request($this->mailmanURL . "/members/remove", 'POST', array('cookie_jar' => $this->cookieJar));
+		$token = $this->getCSRFToken("remove");
 
-		$request->withFormParam("csrf_token", $token)
-		->withFormParam("send_unsub_ack_to_this_batch","0")
-		->withFormParam("send_unsub_notifications_to_list_owner","0")
-		->withFormParam("unsubscribees",join(chr(10), $members))
-		->withFormParam("setmemberopts_btn","Änderungen speichern");
-		$request->send();
-
-		$response = $request->getResponse();
+		$response = $this->client->request('POST', $this->mailmanURL . '/members/remove', [
+			'form_params' => [
+				'csrf_token' => $token,
+				'send_unsub_ack_to_this_batch' => '0',
+				'send_unsub_notifications_to_list_owner' => '0',
+				'unsubscribees' => join(chr(10), $members),
+				'setmemberopts_btn' => 'Änderungen speichern'
+			]
+		]);
 
 		return $this->parseResultList($response->getBody());
 	}
-	
+
 	/**
 	 * Change Address for a member
 	 * @param $memberFrom
@@ -141,16 +136,15 @@ class MailmanAPI {
 	 */
 	public function changeMember($memberFrom, $memberTo) {
 
-		$token = $this->getCSRFToken("change");	
-		$request = Client::request($this->mailmanURL . "/members/change", 'POST', array('cookie_jar' => $this->cookieJar));
-
-		$request->withFormParam("csrf_token", $token)
-		->withFormParam("change_from",$memberFrom)
-		->withFormParam("change_to",$memberTo)
-		->withFormParam("setmemberopts_btn","Änderungen speichern");
-		$request->send();
-
-		$response = $request->getResponse();
+		$token = $this->getCSRFToken("change");
+		$response = $this->client->request('POST', $this->mailmanURL . '/members/change', [
+			'form_params' => [
+				'csrf_token' => $token,
+				'change_from' => $memberFrom,
+				'change_to' => $memberTo,
+				'setmemberopts_btn' => 'Änderungen speichern'
+			]
+		]);
 
 		$dom = new \DOMDocument;
 		$dom->loadHTML($response->getBody());
@@ -176,20 +170,20 @@ class MailmanAPI {
 		$result = array();
 
 		// Are there entrys with success?
-		$haveSuccessfullEntry = $dom->getElementsByTagName("h5")[0] != null;	
+		$haveSuccessfullEntry = $dom->getElementsByTagName("h5")[0] != null;
 
 		if ($haveSuccessfullEntry) {
 			$uls = $dom->getElementsByTagName("ul")[0];
 			$lis = $uls->getElementsByTagName("li");
 
 			foreach($lis as $li) {
-				// Warning after -- 
+				// Warning after --
 				if (strpos($li->nodeValue, '--') == False) {
 					$result[] = $li->nodeValue;
 				}
 			}
 		}
-	
+
 		return $result;
 	}
 
@@ -199,9 +193,8 @@ class MailmanAPI {
 	 *  the Page you want the token for
 	 */
 	private function getCSRFToken($page) {
-		$request = Client::request($this->mailmanURL . "/members/" . $page, 'GET', array('cookie_jar' => $this->cookieJar));
-		$request->send();
-		$response = $request->getResponse();
+
+		$response = $this->client->request('GET', $this->mailmanURL . '/members');
 
 		$dom = new \DOMDocument;
 		$dom->loadHTML($response->getBody());
