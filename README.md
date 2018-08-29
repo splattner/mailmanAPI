@@ -1,7 +1,7 @@
 # mailmanAPI
 A Simple PHP API to work with Mailman 2.x Mailinglists
 
-As Mailman 2.x seems not to offer a proper API. This Mailman API provides some basic functionality to work with Mailman.
+As Mailman 2.x seems not to offer a proper API, this Mailman API provides some basic functionality to work with Mailman.
 Be aware, the library only wrappes around the HTML Forms of the Mailman API Site. It parses the HTTP Responses & HTML Pages, for Authentication Cookies, CSRF TOKEN and then posts to the FORM action url.
 
 Testes with Mailman 2.1.20, no guarantee to work with other versions.
@@ -19,7 +19,7 @@ Testes with Mailman 2.1.20, no guarantee to work with other versions.
 
 ## Installation
 ```
-composer require splattner/mailmanapi:^1.0
+composer require splattner/mailmanapi:^1.2
 ```
 
 ## Usage
@@ -59,4 +59,3 @@ $mailman->removeMember(["member1@domain.com","member2@domain.com"]);
 $mailman = new MailmanAPI($mailManBaseURL,$adminPW);
 $mailman->changeMember("memberold@domain.com","membernew@domain.com");
 ```
-
