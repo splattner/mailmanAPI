@@ -49,13 +49,18 @@ class MailmanAPI {
 		// Get all the urs for the letters
 		$letterLinks = $trs[1];
 		$links = $letterLinks->getElementsByTagName("a");
+
+		$memberList = array();
+
+		if (count($links) === 0) {
+			return $this->getMembersFromTableRows($trs, $isSinglePage = true);
+		}
+
 		$urlsForLetters = array();
 
 		foreach($links as $link) {
 			$urlsForLetters[] =  $link->getAttribute('href');
 		}
-
-		$memberList = array();
 
 		foreach($urlsForLetters as $url) {
 			$response = $this->client->request('GET', $url);
@@ -66,11 +71,32 @@ class MailmanAPI {
 			$tables = $dom->getElementsByTagName("table")[4];
 			$trs = $tables->getElementsByTagName("tr");
 
-			for ($i = 3 ; $i < $trs->length; $i++) {
-				$tds = $trs[$i]->getElementsByTagName("td");
-				$memberList[] = $tds[1]->nodeValue;
-			}
+			$memberList = array_merge(
+				$memberList,
+				$this->getMembersFromTableRows($trs)
+			);
+		}
 
+		return $memberList;
+	}
+
+	/**
+	 * Get the e-mail addresses from a list of table rows (<tr>).
+	 *
+	 * @param  DOMNodeList  $trs
+	 * @param  bool    	$isSinglePage
+	 *
+	 * @return array
+	 */
+	protected function getMembersFromTableRows($trs, $isSinglePage = false)
+	{
+		$firstRowIndex = $isSinglePage ? 2 : 3;
+
+		$memberList = [];
+
+		for ($i = $firstRowIndex; $i < $trs->length; $i++) {
+			$tds = $trs[$i]->getElementsByTagName("td");
+			$memberList[] = $tds[1]->nodeValue;
 		}
 
 		return $memberList;
