@@ -50,7 +50,7 @@ $mailman->addMembers(["member1@domain.com","member2@domain.com"]);
 
 ```
 $mailman = new MailmanAPI($mailManBaseURL,$adminPW);
-$mailman->removeMember(["member1@domain.com","member2@domain.com"]);
+$mailman->removeMembers(["member1@domain.com","member2@domain.com"]);
 ```
 
 ### Change Member
