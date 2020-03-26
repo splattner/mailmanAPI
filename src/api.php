@@ -16,12 +16,12 @@ class MailmanAPI {
 	 * @param $password
 	 *  Administration Passwort for your Mailman List
 	 */
-	public function __construct($mailmalurl, $password) {
+	public function __construct($mailmalurl, $password, $validade_ssl_certs = true) {
 
 		$this->mailmanURL = $mailmalurl;
 		$this->password = $password;
 
-		$this->client = new Client(['base_uri' => $this->mailmanURL, 'cookies' => true]);
+		$this->client = new Client(['base_uri' => $this->mailmanURL, 'cookies' => true, 'verify' => $validade_ssl_certs]);
 
 		$response = $this->client->request('POST', '', [
     'form_params' => [
