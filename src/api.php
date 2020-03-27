@@ -65,8 +65,15 @@ class MailmanAPI {
 		foreach($urlsForLetters as $url) {
 			$response = $this->client->request('GET', $url);
 
-			$dom = new \DOMDocument;
-			$dom->loadHTML($response->getBody());
+			$dom = new \DOMDocument('1.0', 'UTF-8');
+
+            // set error level
+            $internalErrors = libxml_use_internal_errors(true);
+
+            $dom->loadHTML($response->getBody());
+
+            // Restore error level
+            libxml_use_internal_errors($internalErrors);
 
 			$tables = $dom->getElementsByTagName("table")[4];
 			$trs = $tables->getElementsByTagName("tr");
