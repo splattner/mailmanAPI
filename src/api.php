@@ -186,8 +186,15 @@ class MailmanAPI {
 			]
 		]);
 
-		$dom = new \DOMDocument;
+		$dom = new \DOMDocument('1.0', 'UTF-8');
+
+		// set error level
+		$internalErrors = libxml_use_internal_errors(true);
+
 		$dom->loadHTML($response->getBody());
+
+		// Restore error level
+		libxml_use_internal_errors($internalErrors);
 
 		$h3 = $dom->getElementsByTagName("h3")[0];
 
@@ -204,8 +211,15 @@ class MailmanAPI {
 	 */
 	private function parseResultList($body) {
 
-		$dom = new \DOMDocument;
+		$dom = new \DOMDocument('1.0', 'UTF-8');
+
+		// set error level
+		$internalErrors = libxml_use_internal_errors(true);
+
 		$dom->loadHTML($body);
+
+		// Restore error level
+		libxml_use_internal_errors($internalErrors);
 
 		$result = array();
 
@@ -236,8 +250,15 @@ class MailmanAPI {
 
 		$response = $this->client->request('GET', $this->mailmanURL . '/members');
 
-		$dom = new \DOMDocument;
+		$dom = new \DOMDocument('1.0', 'UTF-8');
+
+		// set error level
+		$internalErrors = libxml_use_internal_errors(true);
+
 		$dom->loadHTML($response->getBody());
+
+		// Restore error level
+		libxml_use_internal_errors($internalErrors);
 
 		$form = $dom->getElementsByTagName("form")[0];
 
